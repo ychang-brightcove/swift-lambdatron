@@ -71,13 +71,12 @@ func sf_if(args: Params, ctx: Context) -> EvalResult {
     let otherwise : ConsValue? = args.count == 3 ? args[2] : nil
 
     // Decide what to do with test
-    let testIsTrue : Bool = {
-      switch testForm {
-      case .Nil: return false
-      case let .BoolAtom(x): return x
-      default: return true
-      }
-      }()
+    let testIsTrue : Bool
+    switch testForm {
+    case .Nil: testIsTrue = false
+    case let .BoolAtom(x): testIsTrue = x
+    default: testIsTrue = true
+    }
 
     if testIsTrue {
       return then.evaluate(ctx)
@@ -110,12 +109,7 @@ func sf_def(args: Params, ctx: Context) -> EvalResult {
     return .Failure(EvalError.arityError("0 or 2", actual: args.count, fn))
   }
   let symbol = args[0]
-  let initializer : ConsValue? = {
-    if args.count > 1 {
-      return args[1]
-    }
-    return nil
-  }()
+  let initializer : ConsValue? = args.count > 1 ? args[1] : nil
   
   switch symbol {
   case let .Symbol(s):
@@ -473,25 +467,23 @@ private func extractParameters(args: [ConsValue], ctx: Context) -> ([InternedSym
 /// Given an item (expected to be a vector or a list), with the first item a vector of argument bindings, return a new
 /// SingleFn instance.
 private func buildSingleFnFor(item: ConsValue, #ctx: Context) -> SingleFn? {
-  let itemAsVector : VectorType? = {
-    switch item {
-    case let .List(l): return collectSymbols(l).asArray
-    case let .Vector(v): return v
-    default: return nil
-    }
-  }()
+  let itemAsVector : VectorType?
+  switch item {
+  case let .List(l): itemAsVector = collectSymbols(l).asArray
+  case let .Vector(v): itemAsVector = v
+  default: itemAsVector = nil
+  }
+
   if let vector = itemAsVector {
     // The argument 'item' was a valid list or vector
     if vector.count == 0 {
       return nil
     }
-    if let params = vector[0].asVector() {
-      if let paramTuple = extractParameters(params, ctx) {
-        // Now we've taken out the parameters (they are symbols in a vector
-        let (paramNames, variadic) = paramTuple
-        let forms = vector.count > 1 ? Array(vector[1..<vector.count]) : []
-        return SingleFn(parameters: paramNames, forms: forms, variadicParameter: variadic)
-      }
+    if let params = vector[0].asVector(), paramTuple = extractParameters(params, ctx) {
+      // Now we've taken out the parameters (they are symbols in a vector
+      let (paramNames, variadic) = paramTuple
+      let forms = vector.count > 1 ? Array(vector[1..<vector.count]) : []
+      return SingleFn(parameters: paramNames, forms: forms, variadicParameter: variadic)
     }
   }
   return nil

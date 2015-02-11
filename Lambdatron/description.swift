@@ -87,17 +87,16 @@ extension Function {
     count += specificFns.count
     if count == 1 {
       // Only one arity
-      let funcString : String = {
-        if let v = self.variadic {
-          return v.describe(ctx)
-        }
-        else {
-          var generator = self.specificFns.generate()
-          // FORCE UNWRAP: self.specificFns must have at least one object for this block to be run.
-          let item = generator.next()!.1
-          return item.describe(ctx)
-        }
-        }()
+      let funcString : String
+      if let v = self.variadic {
+        funcString = v.describe(ctx)
+      }
+      else {
+        var generator = self.specificFns.generate()
+        // FORCE UNWRAP: self.specificFns must have at least one object for this block to be run.
+        let item = generator.next()!.1
+        funcString = item.describe(ctx)
+      }
       return "(fn \(funcString))"
     }
     else {
@@ -155,16 +154,17 @@ extension SingleFn {
 private func charLiteralDesc(char: Character) -> String {
   let backspace = Character(UnicodeScalar(8))
   let formfeed = Character(UnicodeScalar(12))
-  let name : String = {
-    switch char {
-    case "\n": return "newline"
-    case "\r": return "return"
-    case " ": return "space"
-    case "\t": return "tab"
-    case backspace: return "backspace"
-    case formfeed: return "formfeed"
-    default: return "\(char)"
-    }
-    }()
+
+  let name : String
+  switch char {
+  case "\n": name = "newline"
+  case "\r": name = "return"
+  case " ": name = "space"
+  case "\t": name = "tab"
+  case backspace: name = "backspace"
+  case formfeed: name = "formfeed"
+  default: name = "\(char)"
+  }
+
   return "\\" + name
 }

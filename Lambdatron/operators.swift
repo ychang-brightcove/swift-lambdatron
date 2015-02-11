@@ -26,13 +26,11 @@ public func ==<T>(lhs: ListType<T>, rhs: ListType<T>) -> Bool {
       // Reached the end of both lists
       return true
     }
-    if let left = left {
-      if let right = right {
-        if left != right {
-          return false
-        }
-        continue
+    if let left = left, right = right {
+      if left != right {
+        return false
       }
+      continue
     }
     // One is nil, the other isn't
     return false

@@ -11,10 +11,11 @@ import Foundation
 /// Given a sequence and an optional prefix element, build a new list.
 func listFromCollection<T, U : SequenceType where T == U.Generator.Element>(coll: U, prefix: T? = nil, postfix: ListType<T>? = nil) -> ListType<T> {
   let tail : ListType<T> = postfix ?? Empty()
-  var head : Cons<T>? = {
-    if let prefix = prefix { return Cons(prefix, next: tail) }
-    return nil
-  }()
+  var head : Cons<T>? = nil
+  if let prefix = prefix {
+    head = Cons(prefix, next: tail)
+  }
+
   var this : Cons<T>? = head
   // Note: lazy reverse iteration is broken, so we need to use this slightly less elegant approach.
   for item in coll {

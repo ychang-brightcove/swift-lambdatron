@@ -80,20 +80,20 @@ private func collectTokens(tokens: [LexToken], inout counter: Int, type: TokenCo
 // Note that this function will *modify* wrapStack by removing elements.
 private func wrappedConsItem(item: ConsValue, inout wrapStack: [NextFormTreatment]) -> ConsValue {
   let wrapType : NextFormTreatment = wrapStack.last ?? .None
-  let wrappedItem : ConsValue = {
-    switch wrapType {
-    case .None:
-      return item
-    case .Quote:
-      return .List(Cons(.ReaderMacro(.Quote), next: Cons(item)))
-    case .SyntaxQuote:
-      return .List(Cons(.ReaderMacro(.SyntaxQuote), next: Cons(item)))
-    case .Unquote:
-      return .List(Cons(.ReaderMacro(.Unquote), next: Cons(item)))
-    case .UnquoteSplice:
-      return .List(Cons(.ReaderMacro(.UnquoteSplice), next: Cons(item)))
-    }
-    }()
+  let wrappedItem : ConsValue
+  switch wrapType {
+  case .None:
+    wrappedItem = item
+  case .Quote:
+    wrappedItem = .List(Cons(.ReaderMacro(.Quote), next: Cons(item)))
+  case .SyntaxQuote:
+    wrappedItem = .List(Cons(.ReaderMacro(.SyntaxQuote), next: Cons(item)))
+  case .Unquote:
+    wrappedItem = .List(Cons(.ReaderMacro(.Unquote), next: Cons(item)))
+  case .UnquoteSplice:
+    wrappedItem = .List(Cons(.ReaderMacro(.UnquoteSplice), next: Cons(item)))
+  }
+
   if wrapStack.count > 0 {
     wrapStack.removeLast()
     return wrappedConsItem(wrappedItem, &wrapStack)
