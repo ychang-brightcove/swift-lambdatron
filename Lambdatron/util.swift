@@ -10,7 +10,7 @@ import Foundation
 
 /// Force the program to exit if something is wrong. This function is intended only to represent bugs in the Lambdatron
 /// interpreter and should never be invoked at runtime; if it is invoked there is a bug in the interpreter code.
-@noreturn func internalError(message: @autoclosure () -> String) {
+@noreturn func internalError(@autoclosure message: () -> String) {
   println("Internal error: \(message())")
   exit(EXIT_FAILURE)
 }
@@ -43,4 +43,14 @@ func listFromString(s: String, postfix: ListType<ConsValue>? = nil) -> ConsValue
   // The 'map' takes each character and wraps it in a CharAtom().
   let list : ListType<ConsValue> = listFromMappedCollection(s, postfix: postfix) { .CharAtom($0) }
   return .List(list)
+}
+
+/// Return true iff the input string has two or more characters.
+func stringHasAtLeastTwoCharacters(s: String) -> Bool {
+  var ctr = 0
+  for _ in s {
+    ctr++
+    if ctr == 2 { return true }
+  }
+  return false
 }

@@ -140,7 +140,7 @@ struct SingleFn {
 
 /// An opaque class describing a user-defined Lambdatron function.
 public class Function : Printable {
-  let context : Context!
+  private(set) var context : Context!
   let variadic : SingleFn?
   let specificFns : [Int : SingleFn]
   

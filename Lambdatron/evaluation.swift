@@ -75,7 +75,7 @@ func collectSymbols(list: ListType<ConsValue>) -> Params {
 
 /// Evaluate a list with a special form in function position.
 private func evaluateSpecialForm(list: Cons<ConsValue>, specialForm: SpecialForm, ctx: Context) -> EvalResult {
-  ctx.log(.Eval, message: "evaluating as special form: \(describeList(list, ctx))")
+  ctx.log(.Eval) { "evaluating as special form: \(describeList(list, ctx))" }
   // How it works:
   // 1. Arguments are passed in as-is
   // 2. The special form decides whether or not to evaluate or use the arguments
@@ -87,7 +87,7 @@ private func evaluateSpecialForm(list: Cons<ConsValue>, specialForm: SpecialForm
 
 /// Evaluate a list with a built-in function in function position.
 private func evaluateBuiltIn(list: Cons<ConsValue>, builtIn: LambdatronBuiltIn, ctx: Context) -> EvalResult {
-  ctx.log(.Eval, message: "evaluating as built-in function: \(describeList(list, ctx))")
+  ctx.log(.Eval) { "evaluating as built-in function: \(describeList(list, ctx))" }
   switch collectFunctionParams(list.next, ctx) {
   case let .Success(values): return builtIn(values, ctx)
   case let .Failure(f): return .Failure(f)
@@ -96,7 +96,7 @@ private func evaluateBuiltIn(list: Cons<ConsValue>, builtIn: LambdatronBuiltIn, 
 
 /// Expand and evaluate a list with a macro in function position.
 private func evaluateMacro(list: Cons<ConsValue>, macro: Macro, ctx: Context) -> EvalResult {
-  ctx.log(.Eval, message: "evaluating as macro expansion: \(describeList(list,ctx))")
+  ctx.log(.Eval) { "evaluating as macro expansion: \(describeList(list,ctx))" }
   // How it works:
   // 1. Arguments are passed in as-is
   // 2. The macro uses the arguments and its body to create a replacement form (piece of code) in its place
@@ -105,7 +105,7 @@ private func evaluateMacro(list: Cons<ConsValue>, macro: Macro, ctx: Context) ->
   let expanded = macro.macroexpand(symbols)
   switch expanded {
   case let .Success(v):
-    ctx.log(.Eval, message: "macroexpansion complete; new form: \(v.describe(ctx))")
+    ctx.log(.Eval) { "macroexpansion complete; new form: \(v.describe(ctx))" }
     let result = v.evaluate(ctx)
     return result
   case .Recur, .Failure: return expanded
@@ -114,7 +114,7 @@ private func evaluateMacro(list: Cons<ConsValue>, macro: Macro, ctx: Context) ->
 
 /// Evaluate a list with a user-defined function in function position.
 private func evaluateFunction(list: Cons<ConsValue>, function: Function, ctx: Context) -> EvalResult {
-  ctx.log(.Eval, message: "evaluating as function: \(describeList(list, ctx))")
+  ctx.log(.Eval) { "evaluating as function: \(describeList(list, ctx))" }
   // How it works:
   // 1. Arguments are evaluated before the function is ever invoked
   // 2. The function only gets the results of the evaluated arguments, and never sees the literal argument forms
@@ -127,7 +127,7 @@ private func evaluateFunction(list: Cons<ConsValue>, function: Function, ctx: Co
 
 /// Evaluate a list with a vector in function position.
 private func evaluateVector(list: Cons<ConsValue>, vector: VectorType, ctx: Context) -> EvalResult {
-  ctx.log(.Eval, message: "evaluating with vector in function position: \(describeList(list, ctx))")
+  ctx.log(.Eval) { "evaluating with vector in function position: \(describeList(list, ctx))" }
   // How it works:
   // 1. (*vector* *pos*) is translated into (nth *vector* *pos*)
   // 2. Normal function call
@@ -146,7 +146,7 @@ private func evaluateVector(list: Cons<ConsValue>, vector: VectorType, ctx: Cont
 
 /// Evaluate a list with a map in function position.
 private func evaluateMap(list: Cons<ConsValue>, map: MapType, ctx: Context) -> EvalResult {
-  ctx.log(.Eval, message: "evaluating with map in function position: \(describeList(list, ctx))")
+  ctx.log(.Eval) { "evaluating with map in function position: \(describeList(list, ctx))" }
   // How it works:
   // 1. (*map* *args*...) is translated into (get *map* *args*...).
   // 2. Normal function call
@@ -160,7 +160,7 @@ private func evaluateMap(list: Cons<ConsValue>, map: MapType, ctx: Context) -> E
 
 /// Evaluate a list with a symbol or keyword in function position.
 private func evaluateKeyType(list: Cons<ConsValue>, key: ConsValue, ctx: Context) -> EvalResult {
-  ctx.log(.Eval, message: "evaluating symbol or keyword in function position: \(describeList(list, ctx))")
+  ctx.log(.Eval) { "evaluating symbol or keyword in function position: \(describeList(list, ctx))" }
   // How it works:
   // 1. (*key* *map* *fallback*) is translated into (get *map* *key* *fallback*).
   // 2. Normal function call

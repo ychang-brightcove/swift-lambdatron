@@ -115,11 +115,11 @@ private func lex1(raw: String) -> RawLexResult {
   var rawTokenBuffer : [RawLexToken] = []
 
   // currentToken can only contain either a StringAtom or an Unknown token
-  var currentToken : NSMutableString = ""
+  var currentToken : String = ""
 
   /// Helper function - flush the current-in-progress token to the token buffer
   func flushTokenToBuffer() {
-    if currentToken.length > 0 {
+    if !currentToken.isEmpty {
       rawTokenBuffer.append(.Unknown(currentToken))
     }
     currentToken = ""
@@ -184,7 +184,7 @@ private func lex1(raw: String) -> RawLexResult {
         }
       case "\\":
         flushTokenToBuffer()                          // Backslash represents a character literal
-        if let result = parseCharAtom(idx, rawAsNSString) {
+        if let result = parseCharAtom(idx, raw) {
           let (token, skip) = result
           rawTokenBuffer.append(token)
           skipCount = skip
@@ -196,7 +196,7 @@ private func lex1(raw: String) -> RawLexResult {
       case _ where characterIsWhitespace(tChar):
         flushTokenToBuffer()                          // Whitespace/newline or equivalent (e.g. commas)
       default:
-        currentToken.appendString(String(char))       // Any other valid character
+        currentToken += String(char)       // Any other valid character
       }
     case .String:
       // Currently lexing characters forming a string literal
@@ -215,7 +215,7 @@ private func lex1(raw: String) -> RawLexResult {
         // Get the next character
         let nextChar = rawAsNSString.substringWithRange(NSRange(location: idx+1, length: 1))
         if let escapeSeq = processEscape(nextChar) {
-          currentToken.appendString(escapeSeq)
+          currentToken += escapeSeq
         }
         else {
           return .Failure(LexError(.InvalidEscapeSequenceError))
@@ -223,7 +223,7 @@ private func lex1(raw: String) -> RawLexResult {
       }
       else {
         // Any other token gets added to the buffer as a literal
-        currentToken.appendString(String(char))
+        currentToken += String(char)
       }
     case .Comment:
       // Comments are completely ignored by the lexer, and are terminated by a newline
@@ -255,41 +255,41 @@ private func lex2(rawTokenBuffer: [RawLexToken]) -> LexResult {
     case let .Syntax(s): tokenBuffer.append(.Syntax(s))
     case let .CharLiteral(cl): tokenBuffer.append(.CharLiteral(cl))
     case let .StringAtom(sl): tokenBuffer.append(.StringAtom(sl))
-    case let .Unknown(u):
+    case let .Unknown(tokenString):
       // Possible type inference bug? Without the String() constructor it fails, even though 'u' is already a string
-      let tValue = NSString(string: String(u))
       // Figure out what to do with the token
-      if let specialForm = SpecialForm(rawValue: tValue) {
+      if let specialForm = SpecialForm(rawValue: tokenString) {
         // Special form
         tokenBuffer.append(.Special(specialForm))
       }
-      else if let builtIn = BuiltIn(rawValue: tValue) {
+      else if let builtIn = BuiltIn(rawValue: tokenString) {
         // Built-in function
         tokenBuffer.append(.BuiltInFunction(builtIn))
       }
-      else if tValue.characterAtIndex(0) == UInt16(UnicodeScalar(":").value) && tValue.length > 1 {
+      else if stringHasAtLeastTwoCharacters(tokenString) && firstCharacter(tokenString) == ":" {
         // This is a keyword (starts with ":" and has at least one other character)
-        tokenBuffer.append(.Keyword(u.substringWithRange(u.startIndex.successor()..<u.endIndex)))
+        let substring = tokenString.substringWithRange(tokenString.startIndex.successor()..<tokenString.endIndex)
+        tokenBuffer.append(.Keyword(substring))
       }
-      else if tValue == "nil" {
+      else if tokenString == "nil" {
         // Literal nil
         tokenBuffer.append(.Nil)
       }
-      else if tValue == "false" {
+      else if tokenString == "false" {
         // Literal bool
         tokenBuffer.append(.Boolean(false))
       }
-      else if tValue == "true" {
+      else if tokenString == "true" {
         // Literal bool
         tokenBuffer.append(.Boolean(true))
       }
-      else if let numberToken = buildNumberFromString(u) {
+      else if let numberToken = buildNumberFromString(tokenString) {
         // Literal number
         tokenBuffer.append(numberToken)
       }
       else {
         // Identifier
-        tokenBuffer.append(.Identifier(u))
+        tokenBuffer.append(.Identifier(tokenString))
       }
     }
   }

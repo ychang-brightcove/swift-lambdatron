@@ -57,7 +57,7 @@ protocol Context : class {
   func keywordForName(name: String) -> InternedKeyword
 
   /// Write a message to the interpreter logging facility.
-  func log(domain: LogDomain, message: @autoclosure () -> String)
+  func log(domain: LogDomain, message: () -> String)
 
   /// Get a reference to the interpreter's input function, if any.
   var readInput : InputFunction? { get }
@@ -204,7 +204,7 @@ private final class RootContext : BaseContext, Context {
     set { bindings[x] = newValue }
   }
 
-  func log(domain: LogDomain, message: @autoclosure () -> String) {
+  func log(domain: LogDomain, message: () -> String) {
     interpreter.log(domain, message: message)
   }
 
@@ -271,7 +271,7 @@ private final class GlobalContext : BaseContext, Context {
     set { bindings[x] = newValue }
   }
 
-  func log(domain: LogDomain, message: @autoclosure () -> String) {
+  func log(domain: LogDomain, message: () -> String) {
     // Don't do anything; global context never logs
   }
 
@@ -521,7 +521,7 @@ final class ChildContext : Context {
     root = parent.root
   }
 
-  func log(domain: LogDomain, message: @autoclosure () -> String) {
+  func log(domain: LogDomain, message: () -> String) {
     root.log(domain, message: message)
   }
 

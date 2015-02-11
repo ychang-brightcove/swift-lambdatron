@@ -52,8 +52,7 @@ func loadStdlibInto(context: Context, files: [String]) {
 func stringDataForBundledFile(name: String) -> String? {
   let path = NSBundle.mainBundle().pathForResource(name, ofType:"lbt")
   if let path = path {
-    let contents = NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding, error: nil)
-    return contents
+    return String(contentsOfFile: path, encoding: NSUTF8StringEncoding, error: nil)
   }
   return nil
 }

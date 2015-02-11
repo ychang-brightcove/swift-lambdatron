@@ -30,7 +30,7 @@ public enum LogDomain : String {
   static var allDomains : [LogDomain] { return [.Eval] }
 }
 
-typealias LoggingFunction = (@autoclosure () -> String) -> ()
+typealias LoggingFunction = (() -> String) -> ()
 
 /// An opaque type representing a function allowing the interpreter to write output.
 public typealias OutputFunction = (String) -> ()
@@ -44,10 +44,10 @@ public class Interpreter {
   var context : Context!
 
   // Logging functions
+  /// Logging function for the 'eval' logging domain.
   var evalLogging : LoggingFunction? = nil
 
   // IO functions
-
   /// A function that the interpreter calls in order to write out data. Defaults to 'print'.
   public var writeOutput : OutputFunction? = print
 
@@ -123,7 +123,7 @@ public class Interpreter {
   }
 
   /// Given a domain and a message, pass the message on to the appropriate logging function (if one exists).
-  func log(domain: LogDomain, message: @autoclosure () -> String) {
+  func log(domain: LogDomain, message: () -> String) {
     switch domain {
     case .Eval:
       evalLogging?(message)
